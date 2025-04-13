@@ -669,59 +669,40 @@ def main():
         st.plotly_chart(fig3, use_container_width=True)
         
         # Cluster analysis
-with tab2:
-    st.subheader("ETF Cluster Analysis")
-    cluster_features = metrics_df[['1M_Return', 'Volatility', 'Sharpe_Ratio']]
-    
-    # Drop rows with NaN values that would break clustering
-    cluster_features = cluster_features.dropna()
-    
-    # Check if we have enough data points left
-    if len(cluster_features) < 2:
-        st.warning("Not enough valid data points for clustering (need at least 2). Some ETFs may have missing values.")
-    else:
+        st.subheader("ETF Clustering Analysis")
+        cluster_features = metrics_df[['1M_Return', 'Volatility', 'Sharpe_Ratio']]
         scaler = MinMaxScaler()
         cluster_scaled = scaler.fit_transform(cluster_features)
         
-        # Check for any remaining NaN/infinite values after scaling
-        if np.isnan(cluster_scaled).any() or np.isinf(cluster_scaled).any():
-            st.error("Data contains invalid values after scaling. Cannot perform clustering.")
-        else:
-            # Determine optimal clusters
-            wcss = []
-            for i in range(1, 6):
-                kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
-                kmeans.fit(cluster_scaled)
-                wcss.append(kmeans.inertia_)
-            
-            fig4, ax = plt.subplots(figsize=(10, 5))
-            ax.plot(range(1, 6), wcss, marker='o')
-            ax.set_title('Elbow Method for Optimal Cluster Number')
-            ax.set_xlabel('Number of clusters')
-            ax.set_ylabel('WCSS')
-            st.pyplot(fig4)
-            
-            # Apply clustering
-            n_clusters = st.slider("Select number of clusters", 2, 5, 3)
-            kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=42)
-            cluster_labels = kmeans.fit_predict(cluster_scaled)
-            
-            # Add cluster labels back to the original metrics_df
-            metrics_df['Cluster'] = np.nan
-            metrics_df.loc[cluster_features.index, 'Cluster'] = cluster_labels
-            
-            # Create 3D scatter plot only for ETFs with valid cluster assignments
-            valid_clusters = metrics_df.dropna(subset=['Cluster'])
-            fig5 = px.scatter_3d(
-                valid_clusters,
-                x='1M_Return',
-                y='Volatility',
-                z='Sharpe_Ratio',
-                color='Cluster',
-                hover_name='ETF',
-                title="ETF Clusters in 3D Space"
-            )
-            st.plotly_chart(fig5, use_container_width=True)
+        # Determine optimal clusters
+        wcss = []
+        for i in range(1, 6):
+            kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
+            kmeans.fit(cluster_scaled)
+            wcss.append(kmeans.inertia_)
+        
+        fig4, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(range(1, 6), wcss, marker='o')
+        ax.set_title('Elbow Method for Optimal Cluster Number')
+        ax.set_xlabel('Number of clusters')
+        ax.set_ylabel('WCSS')
+        st.pyplot(fig4)
+        
+        # Apply clustering
+        n_clusters = st.slider("Select number of clusters", 2, 5, 3)
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=42)
+        metrics_df['Cluster'] = kmeans.fit_predict(cluster_scaled)
+        
+        fig5 = px.scatter_3d(
+            metrics_df,
+            x='1M_Return',
+            y='Volatility',
+            z='Sharpe_Ratio',
+            color='Cluster',
+            hover_name='ETF',
+            title="ETF Clusters in 3D Space"
+        )
+        st.plotly_chart(fig5, use_container_width=True)
     
     with tab3:
         st.subheader("Advanced Predictive Analytics")
