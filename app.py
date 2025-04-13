@@ -669,7 +669,7 @@ def main():
         st.plotly_chart(fig3, use_container_width=True)
         
         # Cluster analysis
-        with tab2:
+with tab2:
     st.subheader("ETF Cluster Analysis")
     cluster_features = metrics_df[['1M_Return', 'Volatility', 'Sharpe_Ratio']]
     
