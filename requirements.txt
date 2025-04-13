@@ -9,3 +9,4 @@ plotly
 statsmodels
 prophet
 tensorflow
+transformers
