@@ -8,3 +8,4 @@ yfinance
 plotly
 statsmodels
 prophet
+tensorflow
