@@ -357,10 +357,17 @@ def generate_ai_insights(etf_name, metrics, predictions):
     
     # Prediction insights
     if predictions:
-        best_model = min(predictions.items(), key=lambda x: x[1]['avg_mse'] if x[1] else float('inf'))
-        if best_model[1]:
-            if 'Random Forest' in best_model[0] or 'Gradient Boosting' in best_model[0]:
-                insights.append(f"🤖 AI Forecast: {best_model[0]} model predicts {best_model[1]['next_5_days_return']*100:.1f}% return in next 5 days")
+        # Find the best model with valid predictions
+        valid_models = {k: v for k, v in predictions.items() if v is not None}
+        if valid_models:
+            best_model = min(valid_models.items(), key=lambda x: x[1]['avg_mse'])
+            
+            # Calculate predicted return if we have prediction data
+            if 'Predicted_Price' in best_model[1]:
+                current_price = metrics['Last_Price']
+                predicted_price = best_model[1]['Predicted_Price']
+                predicted_return = (predicted_price / current_price - 1)
+                insights.append(f"🤖 AI Forecast: {best_model[0]} model predicts {predicted_return*100:.1f}% return in next 5 days")
     
     # Sentiment analysis
     sentiment = get_news_sentiment(etf_name)
