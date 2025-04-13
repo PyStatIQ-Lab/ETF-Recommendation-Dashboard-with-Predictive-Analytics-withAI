@@ -7,3 +7,4 @@ matplotlib
 yfinance
 plotly
 statsmodels
+prophet
